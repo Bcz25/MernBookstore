@@ -13,33 +13,32 @@ module.exports = {
     },
   }),
   // Middleware function for authentication.
-  authMiddleware: function ({ req }) {
-    // Extract token from the request body, query, or headers.
-    let token = req.body.token || req.query.token || req.headers.authorization;
+  authMiddleware: function (req, res, next) {
+    // allows token to be sent via  req.query or headers
+    let token = req.query.token || req.headers.authorization || req.body.token;
 
-    // If the token is in "Bearer <token>" format, extract the token value.
+    // ["Bearer", "<tokenvalue>"]
     if (
-      req.headers.authorization &&
-      req.headers.authorization.startsWith("Bearer ")
-    ) {
-      token = req.headers.authorization.split(" ").pop().trim();
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer ")
+  ) {
+    token = req.headers.authorization.split(" ").pop().trim();
     }
 
-    // If no token is found, return the request object unmodified.
     if (!token) {
-      return req;
+      return res.status(400).json({ message: 'You have no token!' });
     }
 
+    // verify token and get user data out of it
     try {
-      // Verify the token and attach user data to the request object.
       const { data } = jwt.verify(token, secret, { maxAge: expiration });
       req.user = data;
-    } catch (err) {
-      // Log any errors for debugging purposes.
-      console.error("Invalid token:", err);
+    } catch {
+      console.log('Invalid token');
+      return res.status(400).json({ message: 'invalid token!' });
     }
-
-    return req; // Return the modified request object.
+    // send to next endpoint
+    next();
   },
   signToken: function ({ username, email, _id }) {
     const payload = { username, email, _id };

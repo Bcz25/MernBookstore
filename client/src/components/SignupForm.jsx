@@ -1,12 +1,14 @@
 import { useState } from 'react';
+import { useMutation } from '@apollo/client';
+import { ADD_USER } from '../utils/mutations';
 import { Form, Button, Alert } from 'react-bootstrap';
-
-import { createUser } from '../utils/API';
 import Auth from '../utils/auth';
 
 const SignupForm = () => {
   // set initial form state
   const [userFormData, setUserFormData] = useState({ username: '', email: '', password: '' });
+  // Define the addUser mutation.
+  const [addUser, { error }] = useMutation(ADD_USER);
   // set state for form validation
   const [validated] = useState(false);
   // set state for alert
@@ -27,21 +29,33 @@ const SignupForm = () => {
       event.stopPropagation();
     }
 
+    // try block to execute the add user mutation
     try {
-      const response = await createUser(userFormData);
-
-      if (!response.ok) {
-        throw new Error('something went wrong!');
-      }
-
-      const { token, user } = await response.json();
-      console.log(user);
+      const { data } = await addUser({
+        variables: { ...userFormData },
+      });
+      const token = data.addUser.token; 
       Auth.login(token);
     } catch (err) {
-      console.error(err);
+      if (err.graphQLErrors) {
+        console.error("GraphQL errors:", err.graphQLErrors);
+        // Check for specific error message related to duplicate key.
+        const duplicateError = err.graphQLErrors.find((error) =>
+          error.message.includes("duplicate key error")
+        );
+        if (duplicateError) {
+          alert("Username already exists. Please choose a different username.");
+        } else {
+          alert("An error occurred during signup.");
+        }
+      }
+      // Check for network error.
+      if (err.networkError) {
+        console.error("Network error:", err.networkError);
+      }
+      console.error("Error details:", err);
       setShowAlert(true);
     }
-
     setUserFormData({
       username: '',
       email: '',
