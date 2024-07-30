@@ -6,7 +6,7 @@ import process from 'process'
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 3000,
+    port: process.env.PORT || 3000,
     open: true,
     proxy: {
       // Proxy requests to /graphql to your GraphQL server.
