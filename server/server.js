@@ -1,7 +1,7 @@
 const express = require("express");
 const { ApolloServer } = require("@apollo/server");
 const { expressMiddleware } = require("@apollo/server/express4");
-//const cors = require("cors");
+const cors = require("cors");
 const path = require("path");
 const { authMiddleware } = require("./utils/auth");
 
@@ -15,18 +15,14 @@ const server = new ApolloServer({
   resolvers,
 });
 
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "OPTIONS, GET, POST, PUT, PATCH, DELETE"
-  );
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
-  next();
-});
+// Set up CORS options.
+const corsOptions = {
+  origin: "*", // Allow all origins.
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 const startApolloServer = async () => {
   await server.start();
