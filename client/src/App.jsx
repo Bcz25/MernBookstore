@@ -4,7 +4,6 @@ import { ApolloClient, ApolloProvider, InMemoryCache, createHttpLink } from '@ap
 import { setContext } from '@apollo/client/link/context';
 import Navbar from './components/Navbar';
 
-//const GRAPHQL_ENDPOINT = import.meta.env.VITE_GRAPHQL_ENDPOINT || 'http://localhost:3001/graphql';
 const httpLink = createHttpLink({ uri: '/graphql' });
 const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem('id_token');
