@@ -17,7 +17,7 @@ const server = new ApolloServer({
 
 // Set up CORS options.
 const corsOptions = {
-  origin: "http://localhost:3000",
+  origin: ["http://localhost:3000", "https://mernbookstore-4hpm.onrender.com"],
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
 };
